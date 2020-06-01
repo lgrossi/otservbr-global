@@ -1452,6 +1452,8 @@ void ProtocolGame::sendBasicData()
 
 void ProtocolGame::sendBlessStatus()
 {
+	if (!player) return;
+
 	NetworkMessage msg;
 	//uint8_t maxClientBlessings = (player->operatingSystem == CLIENTOS_NEW_WINDOWS) ? 8 : 6; (compartability for the client 10)
 	//Ignore ToF (bless 1)
@@ -1469,17 +1471,11 @@ void ProtocolGame::sendBlessStatus()
 
 	msg.addByte(0x9C);
 
-	if (player) {
-		if (blessCount >= 5) //Show up the glowing effect in items if have all blesses
-			flag |= 1;
+	if (blessCount >= 5) //Show up the glowing effect in items if have all blesses
+		flag |= 1;
 
-		msg.add<uint16_t>(flag);
-		msg.addByte((blessCount >= 7) ? 3 : ((blessCount >= 5) ? 2 : 1)); // 1 = Disabled | 2 = normal | 3 = green
-	} else if (blessCount >= 5) {
-		msg.add<uint16_t>(0x01);
-	} else {
-		msg.add<uint16_t>(0x00);
-	}
+	msg.add<uint16_t>(flag);
+	msg.addByte((blessCount >= 7) ? 3 : ((blessCount >= 5) ? 2 : 1)); // 1 = Disabled | 2 = normal | 3 = green
 
 	writeToOutputBuffer(msg);
 }
@@ -2739,10 +2735,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	msg.addString(g_config.getString(ConfigManager::STORE_IMAGES_URL));
 	msg.add<uint16_t>(static_cast<uint16_t>(g_config.getNumber(ConfigManager::STORE_COIN_PACKET)));
 
-	if (shouldAddExivaRestrictions) {
-		msg.addByte(0x00); // exiva button enabled
-	}
-
+	msg.addByte(0x00); // exiva button enabled
 	msg.addByte(0x01); // tournament button enabled
 
 	writeToOutputBuffer(msg);
@@ -3354,6 +3347,8 @@ void ProtocolGame::AddCreature(NetworkMessage& msg, const Creature* creature, bo
 			const Creature* master = creature->getMaster();
 			if (master) {
 				msg.add<uint32_t>(master->getID());
+			} else {
+				msg.add<uint32_t>(0x00);
 			}
 		}
 
@@ -3412,6 +3407,8 @@ void ProtocolGame::AddCreature(NetworkMessage& msg, const Creature* creature, bo
 		const Creature* master = creature->getMaster();
 		if (master) {
 			msg.add<uint32_t>(master->getID());
+		} else {
+			msg.add<uint32_t>(0x00);
 		}
 	}
 
