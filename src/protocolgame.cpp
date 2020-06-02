@@ -256,12 +256,15 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 	}
 
 	OperatingSystem_t operatingSystem = static_cast<OperatingSystem_t>(msg.get<uint16_t>());
+
+	if (operatingSystem <= CLIENTOS_NEW_WINDOWS) 
+		enableCompact();
+
 	version = msg.get<uint16_t>();
-	enableCompact();
 
 	clientVersion = msg.get<uint32_t>();
 
-	msg.skipBytes(3); // U32 client version, U8 client type, U16 dat revision
+	msg.skipBytes(3); // U16 dat revision, game preview state
 
 	if (clientVersion >= 1149 && clientVersion < 1200) {
 		// on 1149.6xxx, this was removed later.
@@ -1526,6 +1529,7 @@ void ProtocolGame::sendPreyData()
 	msg.addByte(0xEE);
 	msg.addByte(0x01);
 	msg.add<uint64_t>(0);
+	
 	// prey prices
 	msg.addByte(0xE9);
 	msg.add<uint32_t>(0);
@@ -3603,7 +3607,7 @@ void ProtocolGame::AddItem(NetworkMessage& msg, uint16_t id, uint8_t count)
 		msg.addByte(count);
 	} else if (it.isSplash() || it.isFluidContainer()) {
 		msg.addByte(fluidMap[count & 7]);
-	} else if (it.isContainer()) {
+	} else if (it.isContainer() && player->getOperatingSystem() <= CLIENTOS_NEW_WINDOWS) {
 		msg.addByte(0x00);
 	}
 
@@ -3622,7 +3626,7 @@ void ProtocolGame::AddItem(NetworkMessage& msg, const Item* item)
 		msg.addByte(std::min<uint16_t>(0xFF, item->getItemCount()));
 	} else if (it.isSplash() || it.isFluidContainer()) {
 		msg.addByte(fluidMap[item->getFluidType() & 7]);
-	} else if (it.isContainer()) {
+	} else if (it.isContainer() && player->getOperatingSystem() <= CLIENTOS_NEW_WINDOWS) {
 		uint32_t quickLootFlags = item->getQuickLootFlags();
 		if (quickLootFlags > 0) {
 			msg.addByte(2);
@@ -3692,11 +3696,11 @@ void ProtocolGame::sendKillTrackerUpdate(Container* corpse, const std::string& n
 
 void ProtocolGame::sendUpdateSupplyTracker(const Item* item)
  {
- 	if (!player || !item || getVersion() < 1140) {
+ 	if (!player || !item) {
  		return;
  	}
 
-   	NetworkMessage msg;
+	NetworkMessage msg;
  	msg.addByte(0xCE);
  	msg.add<uint16_t>(item->getClientID());
 
