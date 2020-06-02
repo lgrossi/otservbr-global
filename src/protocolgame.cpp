@@ -3471,7 +3471,11 @@ void ProtocolGame::AddPlayerSkills(NetworkMessage& msg)
 	for (uint8_t i = SKILL_FIRST; i <= SKILL_FISHING; ++i) {
 		msg.add<uint16_t>(std::min<int32_t>(player->getSkillLevel(i), std::numeric_limits<uint16_t>::max()));
 		msg.add<uint16_t>(player->getBaseSkill(i));
-		msg.add<uint16_t>(player->getBaseSkill(i));
+		
+		if (player->getOperatingSystem() <= CLIENTOS_NEW_WINDOWS) {
+			msg.add<uint16_t>(player->getBaseSkill(i));
+		}
+
 		msg.add<uint16_t>(player->getSkillPercent(i) * 100);
 	}
 
