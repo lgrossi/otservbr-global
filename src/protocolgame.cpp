@@ -3464,7 +3464,11 @@ void ProtocolGame::AddPlayerSkills(NetworkMessage& msg)
 	msg.addByte(0xA1);
 
 	msg.add<uint16_t>(player->getMagicLevel());
-	msg.add<uint16_t>(player->getBaseMagicLevel());
+		
+	if (player->getOperatingSystem() <= CLIENTOS_NEW_WINDOWS) {
+		msg.add<uint16_t>(player->getBaseMagicLevel());
+	}
+	
 	msg.add<uint16_t>(player->getBaseMagicLevel());
 	msg.add<uint16_t>(player->getMagicLevelPercent() * 100);
 
