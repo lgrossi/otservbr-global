@@ -1478,6 +1478,7 @@ void ProtocolGame::sendBlessStatus()
 
 	msg.add<uint16_t>(flag);
 	msg.addByte((blessCount >= 7) ? 3 : ((blessCount >= 5) ? 2 : 1)); // 1 = Disabled | 2 = normal | 3 = green
+	msg.add<uint16_t>(0);
 
 	writeToOutputBuffer(msg);
 }
