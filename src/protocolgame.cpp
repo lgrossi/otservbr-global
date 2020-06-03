@@ -1521,18 +1521,18 @@ void ProtocolGame::sendPreyData()
 		msg.addByte(0x00); // wildCards
 	}
 
-	msg.addByte(0xEC);
-	msg.addByte(0xEE);
-	msg.addByte(0x0A);
-	msg.add<uint64_t>(0);
-	msg.addByte(0xEE);
-	msg.addByte(0x01);
-	msg.add<uint64_t>(0);
+	msg.addByte(0xEC); // close imb window
+	msg.addByte(0xEE); // send collection resource
+	msg.addByte(0x0A); // prey id
+	msg.add<uint64_t>(0); // resource value
+	msg.addByte(0xEE); // send collection resource
+	msg.addByte(0x01); // bank id
+	msg.add<uint64_t>(0); // resource value
 	
 	// prey prices
-	msg.addByte(0xE9);
-	msg.add<uint32_t>(0);
-	msg.addByte(0x00); // reRoll Price (1 in tibia)
+	msg.addByte(0xE9); // reroll prices
+	msg.add<uint32_t>(0); // price
+	msg.addByte(0x00); // wildcard
 	msg.addByte(0x00); // selectCreatureDirectly price (5 in tibia)
 	writeToOutputBuffer(msg);
 }

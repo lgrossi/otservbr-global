@@ -164,7 +164,6 @@ enum PreySlotStatus_t : uint16_t
 	PREY_SLOT_UNLOCKED = 1,
 };
 
-
 enum PreyState_t : uint16_t
 {
 	PREY_STATE_LOCKED = 0,

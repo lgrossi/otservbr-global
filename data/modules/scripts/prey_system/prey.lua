@@ -397,7 +397,7 @@ function Player.sendPreyData(self, slot)
 
 	elseif slotState == Prey.StateTypes.SELECTION then
 		msg:addByte(slot)
-		msg:addByte(3)
+		msg:addByte(slotState)
 
 		local preyMonsterList = self:getPreyMonsterList(slot)
 		if preyMonsterList == '' then
