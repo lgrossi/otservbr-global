@@ -85,6 +85,7 @@ function onRecvbyte(player, msg, byte)
 end
 
 Blessings.sendBlessStatus = function(player, curBless)
+	-- why not using ProtocolGame::sendBlessStatus ?
 	local msg = NetworkMessage()
 	msg:addByte(Blessings.S_Packet.BlessStatus)
 	callback = function(k) return true end

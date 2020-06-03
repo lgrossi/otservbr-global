@@ -403,6 +403,7 @@ function sendShowDescription(playerId, offerId)
 end
 
 function sendShowStoreOffers(playerId, category)
+	-- consider using protocolgame::sendStoreCategoryOffers
 	local player = Player(playerId)
 	if not player then
 		return false
