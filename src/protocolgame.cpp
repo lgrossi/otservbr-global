@@ -270,7 +270,6 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		// on 1149.6xxx, this was removed later.
 		// extra byte for "optimise connection stability"
 		if (msg.getLength() - msg.getBufferPosition() > 128) {
-			shouldAddExivaRestrictions = true;
 			msg.skipBytes(1);
 		}
 	}
@@ -3034,9 +3033,6 @@ void ProtocolGame::sendOutfitWindow()
 		}
 
 		protocolOutfits.emplace_back(outfit.name, outfit.lookType, addons);
-		if (protocolOutfits.size() == 150 && version < 1185) { // Game client doesn't allow more than 100 outfits
-			break;
-		}
 	}
 
 	msg.add<uint16_t>(protocolOutfits.size());
@@ -3468,7 +3464,7 @@ void ProtocolGame::AddPlayerSkills(NetworkMessage& msg)
 	if (player->getOperatingSystem() <= CLIENTOS_NEW_WINDOWS) {
 		msg.add<uint16_t>(player->getBaseMagicLevel());
 	}
-	
+
 	msg.add<uint16_t>(player->getBaseMagicLevel());
 	msg.add<uint16_t>(player->getMagicLevelPercent() * 100);
 
@@ -3717,7 +3713,7 @@ void ProtocolGame::sendUpdateSupplyTracker(const Item* item)
 
 void ProtocolGame::sendUpdateImpactTracker(int32_t quantity, bool isHeal)
  {
- 	if (!player || getVersion() < 1140) {
+ 	if (!player) {
  		return;
  	}
 

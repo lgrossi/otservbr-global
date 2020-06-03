@@ -374,7 +374,6 @@ class ProtocolGame final : public Protocol
 		bool acceptPackets = false;
 
 		bool loggedIn = false;
-		bool shouldAddExivaRestrictions = false;
 
 		void sendInventory();
 };
