@@ -3731,8 +3731,8 @@ void ProtocolGame::sendUpdateLootTracker(Item* item)
  		return;
  	}
 
-  	NetworkMessage msg;
-  	msg.addByte(0xCF);
+	NetworkMessage msg;
+	msg.addByte(0xCF);
 	AddItem(msg, item);
  	msg.addString(item->getName());
  	item->setIsLootTrackeable(false);

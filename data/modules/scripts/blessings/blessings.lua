@@ -129,6 +129,7 @@ Blessings.sendBlessStatus = function(player, curBless)
 end
 
 Blessings.sendBlessDialog = function(player)
+	-- TODO: Migrate to protocolgame.cpp
 	local msg = NetworkMessage()
 	msg:addByte(Blessings.S_Packet.BlessDialog)
 
