@@ -454,23 +454,32 @@ function Player.sendPreyData(self, slot)
 
 	-- Next free reroll
 	msg:addU16(self:getMinutesUntilFreeReroll(slot))
-
-	-- Feature unavailable.
+	-- Feature unavailable (wildcards)
 	msg:addByte(0x00)
 
+	-- send prey message
+	msg:sendToPlayer(self)
+
+	-- close emb window
+	self:closeImbuementWindow()
+
 	-- Send resources
-	msg:addByte(0xEC)
 	self:sendResource("prey", self:getPreyBonusRerolls())
 	self:sendResource("bank", self:getBankBalance())
 	self:sendResource("inventory", self:getMoney())
 
-	-- List reroll price
+	-- Send reroll price
+	self:reRollPrice()
+
+end
+
+function Player:reRollPrice()
+	local msg = NetworkMessage()
+	
 	msg:addByte(Prey.S_Packets.PreyRerollPrice)
 	msg:addU32(self:getRerollPrice())
-
-	-- Wildcard and Direct Selection price.
-	msg:addByte(0x01)
-	msg:addByte(0x05)
+	msg:addByte(0x01) -- wildcards
+	msg:addByte(0x05) -- select directly
 
 	msg:sendToPlayer(self)
 end

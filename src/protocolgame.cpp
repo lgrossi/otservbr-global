@@ -1509,32 +1509,45 @@ void ProtocolGame::sendPremiumTrigger()
 }
 
 // Send preyInfo
-void ProtocolGame::sendPreyData()
-{
+void ProtocolGame::closeImbuingWindow() {
 	NetworkMessage msg;
-	for (int i = 0; i < 3; i++) {
-		msg.addByte(0xE8);
-		msg.addByte(i);
+	msg.addByte(0xEC);
+	writeToOutputBuffer(msg);
+}
 
-		msg.addByte(0x00);
-		msg.addByte(0x00);
-		msg.add<uint16_t>(0);
-		msg.addByte(0x00); // wildCards
+void ProtocolGame::initPreyData() 
+{
+	for (uint8_t i = 0; i <= PREY_SLOTNUM_THIRD; i++) {
+		sendPreyData(static_cast<PreySlotNum_t>(i), PREY_STATE_LOCKED);
 	}
 
-	msg.addByte(0xEC); // close imb window
-	msg.addByte(0xEE); // send collection resource
-	msg.addByte(0x0A); // prey id
-	msg.add<uint64_t>(0); // resource value
-	msg.addByte(0xEE); // send collection resource
-	msg.addByte(0x01); // bank id
-	msg.add<uint64_t>(0); // resource value
-	
-	// prey prices
+	sendResourceBalance(RESOURCE_PREY, 0);
+	sendResourceBalance(RESOURCE_INVENTORY, 0);
+
+	sendPreyPrices();
+}
+
+void ProtocolGame::sendPreyPrices(uint32_t price /*= 0*/, uint8_t wildcard /*= 0*/, uint8_t directly /*= 0*/)
+{
+	NetworkMessage msg;
 	msg.addByte(0xE9); // reroll prices
-	msg.add<uint32_t>(0); // price
-	msg.addByte(0x00); // wildcard
-	msg.addByte(0x00); // selectCreatureDirectly price (5 in tibia)
+	msg.add<uint32_t>(price); // price
+	msg.addByte(wildcard); // wildcard
+	msg.addByte(directly); // selectCreatureDirectly price (5 in tibia)
+	writeToOutputBuffer(msg);
+}
+
+void ProtocolGame::sendPreyData(PreySlotNum_t slot, PreyState_t slotState)
+{
+	NetworkMessage msg;
+	msg.addByte(0xE8);
+	msg.addByte(slot);
+
+	msg.addByte(slotState);
+	msg.addByte(0x00); // empty byte
+	msg.add<uint16_t>(0); // next free roll
+	msg.addByte(0x00); // wildCards
+
 	writeToOutputBuffer(msg);
 }
 
@@ -1764,21 +1777,24 @@ void ProtocolGame::sendGameNews()
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendResourceBalance(uint64_t money, uint64_t bank)
+void ProtocolGame::sendResourcesBalance(uint64_t money, uint64_t bank)
+{
+	sendResourceBalance(RESOURCE_BANK, bank);
+	sendResourcesBalance(RESOURCE_INVENTORY, money);
+}
+
+void ProtocolGame::sendResourceBalance(Resource_t resourceType, uint64_t value)
 {
 	NetworkMessage msg;
 	msg.addByte(0xEE);
-	msg.addByte(0x00);
-	msg.add<uint64_t>(bank);
-	msg.addByte(0xEE);
-	msg.addByte(0x01);
-	msg.add<uint64_t>(money);
+	msg.addByte(resourceType);
+	msg.add<uint64_t>(value);
 	writeToOutputBuffer(msg);
 }
 
 void ProtocolGame::sendSaleItemList(const std::list<ShopInfo>& shop)
 {
-	sendResourceBalance(player->getMoney(), player->getBankBalance());
+	sendResourcesBalance(player->getMoney(), player->getBankBalance());
 
 	NetworkMessage msg;
 	msg.addByte(0x7B);
@@ -1919,7 +1935,7 @@ void ProtocolGame::sendMarketEnter(uint32_t depotId)
 	writeToOutputBuffer(msg);
 
 	updateCoinBalance();
-	sendResourceBalance(player->getMoney(), player->getBankBalance());
+	sendResourcesBalance(player->getMoney(), player->getBankBalance());
 }
 
 void ProtocolGame::sendCoinBalance()
@@ -2804,7 +2820,7 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 
 	sendBasicData();
 	sendInventoryClientIds();
-	sendPreyData();
+	initPreyData();
 
 	player->sendClientCheck();
 	player->sendGameNews();
@@ -3597,7 +3613,7 @@ void ProtocolGame::sendImbuementWindow(Item* item)
 		msg.add<uint16_t>(itm.second);
 	}
 
-	sendResourceBalance(player->getMoney(), player->getBankBalance());
+	sendResourcesBalance(player->getMoney(), player->getBankBalance());
 
 	writeToOutputBuffer(msg);
 }
