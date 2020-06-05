@@ -469,11 +469,11 @@ function Player.sendPreyData(self, slot)
 	self:sendResource("inventory", self:getMoney())
 
 	-- Send reroll price
-	self:reRollPrice()
+	self:sendPreyRerollPrice()
 
 end
 
-function Player:reRollPrice()
+function Player:sendPreyRerollPrice()
 	local msg = NetworkMessage()
 	
 	msg:addByte(Prey.S_Packets.PreyRerollPrice)

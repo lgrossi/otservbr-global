@@ -212,7 +212,7 @@ class ProtocolGame final : public Protocol
 		// Send preyInfo
 		void closeImbuingWindow();
 		void initPreyData();
-		void sendPreyPrices(uint32_t price = 0, uint8_t wildcard = 0,uint8_t directly = 0);
+		void sendPreyRerollPrice(uint32_t price = 0, uint8_t wildcard = 0,uint8_t directly = 0);
 		void sendPreyData(PreySlotNum_t slot, PreyState_t slotState);
 
 		void sendCancelWalk();
@@ -378,6 +378,7 @@ class ProtocolGame final : public Protocol
 		bool acceptPackets = false;
 
 		bool loggedIn = false;
+		bool shouldAddExivaRestrictions = false;
 
 		void sendInventory();
 };

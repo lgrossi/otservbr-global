@@ -270,6 +270,7 @@ void ProtocolGame::onRecvFirstMessage(NetworkMessage& msg)
 		// on 1149.6xxx, this was removed later.
 		// extra byte for "optimise connection stability"
 		if (msg.getLength() - msg.getBufferPosition() > 128) {
+			shouldAddExivaRestrictions = true;
 			msg.skipBytes(1);
 		}
 	}
@@ -1524,10 +1525,10 @@ void ProtocolGame::initPreyData()
 	sendResourceBalance(RESOURCE_PREY, 0);
 	sendResourceBalance(RESOURCE_INVENTORY, 0);
 
-	sendPreyPrices();
+	sendPreyRerollPrice();
 }
 
-void ProtocolGame::sendPreyPrices(uint32_t price /*= 0*/, uint8_t wildcard /*= 0*/, uint8_t directly /*= 0*/)
+void ProtocolGame::sendPreyRerollPrice(uint32_t price /*= 0*/, uint8_t wildcard /*= 0*/, uint8_t directly /*= 0*/)
 {
 	NetworkMessage msg;
 	msg.addByte(0xE9); // reroll prices
@@ -2755,8 +2756,8 @@ void ProtocolGame::sendAddCreature(const Creature* creature, const Position& pos
 	msg.addString(g_config.getString(ConfigManager::STORE_IMAGES_URL));
 	msg.add<uint16_t>(static_cast<uint16_t>(g_config.getNumber(ConfigManager::STORE_COIN_PACKET)));
 
-	msg.addByte(0x00); // exiva button enabled
-	msg.addByte(0x01); // tournament button enabled
+	msg.addByte(shouldAddExivaRestrictions ? 0x01 : 0x00); // exiva button enabled
+	// msg.addByte(0x01); // tournament button enabled
 
 	writeToOutputBuffer(msg);
 
