@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -766,6 +766,15 @@ std::string getCombatName(CombatType_t combatType)
 	return "unknown";
 }
 
+CombatType_t getCombatType(const std::string& combatname)
+{
+	auto it = std::find_if(combatTypeNames.begin(), combatTypeNames.end(), [combatname](std::pair<CombatType_t, std::string> const& pair) {
+		return pair.second == combatname;
+	});
+
+	return it != combatTypeNames.end() ? it->first : COMBAT_NONE;
+}
+
 Ammo_t getAmmoType(const std::string& strValue)
 {
 	auto ammoType = ammoTypeNames.find(strValue);
@@ -1261,6 +1270,9 @@ const char* getReturnMessage(ReturnValue value)
 
 		case RETURNVALUE_YOUCANNOTTRADETHISHOUSE:
 			return "You can not trade this house.";
+
+		case RETURNVALUE_YOUDONTHAVEREQUIREDPROFESSION:
+			return "You don't have the required profession.";
 
 		case RETURNVALUE_NOTENOUGHFISTLEVEL:
 			return "You do not have enough fist level";

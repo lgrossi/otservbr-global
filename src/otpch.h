@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,5 +43,19 @@
 #include <boost/asio.hpp>
 
 #include <pugixml.hpp>
+
+
+// Log library
+#ifdef DEBUG_LOG
+	// DLOG_F(verbosity_name, fmt, ...)
+	// DVLOG_F(verbosity, fmt, ...)
+	// DLOG_IF_F(verbosity_name, cond, fmt, ...)
+	// DVLOG_IF_F(verbosity, cond, fmt, ...)
+	// DRAW_LOG_F(verbosity_name, fmt, ...)
+	// DRAW_VLOG_F(verbosity, fmt, ...)
+	#define LOGURU_DEBUG_LOGGING 1
+#endif
+// #define LOGURU_WITH_STREAMS 1
+#include "loguru.h"
 
 #endif

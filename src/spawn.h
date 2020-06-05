@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ struct spawnBlock_t {
 class Spawn
 {
 	public:
-		Spawn(Position pos, int32_t radius) : centerPos(std::move(pos)), radius(radius) {}
+		Spawn(Position initPos, int32_t initRadius) : centerPos(std::move(initPos)), radius(initRadius) {}
 		~Spawn();
 
 		// non-copyable

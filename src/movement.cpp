@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,17 @@
 #include "otpch.h"
 
 #include "game.h"
-
 #include "events.h"
 
 #include "pugicast.h"
 
 #include "movement.h"
+#include "imbuements.h"
 
 extern Game g_game;
 extern Vocations g_vocations;
 extern Events* g_events;
+extern Imbuements* g_imbuements;
 
 MoveEvents::MoveEvents() :
 	scriptInterface("MoveEvents Interface")
@@ -100,6 +101,12 @@ Event_ptr MoveEvents::getEvent(const std::string& nodeName)
 		return nullptr;
 	}
 	return Event_ptr(new MoveEvent(&scriptInterface));
+}
+
+bool MoveEvents::isRegistered(uint32_t itemid)
+{
+	auto it = itemIdMap.find(itemid);
+	return it != itemIdMap.end();
 }
 
 bool MoveEvents::registerEvent(Event_ptr event, const pugi::xml_node& node)
@@ -275,25 +282,12 @@ bool MoveEvents::registerLuaEvent(MoveEvent* event)
 		}
 	} else if (moveEvent->getPosList().size() > 0) {
 		if (moveEvent->getPosList().size() == 1) {
-			std::string tempPos = moveEvent->getPosList().at(0);
-			std::vector<int32_t> temp = vectorAtoi(explodeString(tempPos, ";"));
-			if (temp.size() < 3) {
-				return false;
-			}
-
-			Position pos(temp[0], temp[1], temp[2]);
+			Position pos = moveEvent->getPosList().at(0);
 			addEvent(*moveEvent, pos, positionMap);
 		} else {
 			auto v = moveEvent->getPosList();
 			for (auto i = v.begin(); i != v.end(); i++) {
-				std::string tempPos = *i;
-				std::vector<int32_t> temp = vectorAtoi(explodeString(tempPos, ";"));
-				if (temp.size() < 3) {
-					return false;
-				}
-
-				Position pos(temp[0], temp[1], temp[2]);
-				addEvent(*moveEvent, pos, positionMap);
+				addEvent(*moveEvent, *i, positionMap);
 			}
 		}
 	} else {
@@ -707,10 +701,23 @@ uint32_t MoveEvent::EquipItem(MoveEvent* moveEvent, Player* player, Item* item, 
 	} else {
 		player->setItemAbility(slot, true);
 	}
-	
+
 	if (it.imbuingSlots > 0) {
-			g_events->eventPlayerOnEquipImbuement(player, item);
+		std::vector<Imbuement*> imbuement;
+		for(uint8_t slotid = 0; slotid < it.imbuingSlots; slotid++) {
+			uint32_t info = item->getImbuement(slotid);
+			if (info >> 8 == 0) {
+				continue;
+			}
+			imbuement.push_back(g_imbuements->getImbuement(info & 0xFF));
 		}
+		if(!imbuement.empty()) {
+			g_game.startImbuementCountdown(item);
+			for (Imbuement* ib : imbuement) {
+				player->onEquipImbueItem(ib);
+			}
+		}
+	}
 
 	if (!it.abilities) {
 		return 1;
@@ -757,37 +764,31 @@ uint32_t MoveEvent::EquipItem(MoveEvent* moveEvent, Player* player, Item* item, 
 		player->addCondition(condition);
 	}
 
-	//skill modifiers
-	bool needUpdateSkills = false;
+	//skill/stats modifiers
+	bool needUpdate = false;
 
 	for (int32_t i = SKILL_FIRST; i <= SKILL_LAST; ++i) {
 		if (it.abilities->skills[i]) {
-			needUpdateSkills = true;
+			needUpdate = true;
 			player->setVarSkill(static_cast<skills_t>(i), it.abilities->skills[i]);
 		}
 	}
 
-	if (needUpdateSkills) {
-		player->sendSkills();
-	}
-
-	//stat modifiers
-	bool needUpdateStats = false;
-
 	for (int32_t s = STAT_FIRST; s <= STAT_LAST; ++s) {
 		if (it.abilities->stats[s]) {
-			needUpdateStats = true;
+			needUpdate = true;
 			player->setVarStats(static_cast<stats_t>(s), it.abilities->stats[s]);
 		}
 
 		if (it.abilities->statsPercent[s]) {
-			needUpdateStats = true;
+			needUpdate = true;
 			player->setVarStats(static_cast<stats_t>(s), static_cast<int32_t>(player->getDefaultStats(static_cast<stats_t>(s)) * ((it.abilities->statsPercent[s] - 100) / 100.f)));
 		}
 	}
 
-	if (needUpdateStats) {
+	if (needUpdate) {
 		player->sendStats();
+		player->sendSkills();
 	}
 
 	return 1;
@@ -806,17 +807,26 @@ uint32_t MoveEvent::DeEquipItem(MoveEvent*, Player* player, Item* item, slots_t 
 		g_game.transformItem(item, it.transformDeEquipTo);
 		g_game.startDecay(item);
 	}
+
 	if (it.imbuingSlots > 0) {
-			g_events->eventPlayerOnDeEquipImbuement(player, item);
+		std::vector<Imbuement*> imbuement;
+		for(uint8_t slotid = 0; slotid < it.imbuingSlots; slotid++) {
+			uint32_t info = item->getImbuement(slotid);
+			if (info >> 8 == 0) {
+				continue;
+			}
+			imbuement.push_back(g_imbuements->getImbuement(info & 0xFF));
 		}
+		if(!imbuement.empty()) {
+			for (Imbuement* ib : imbuement) {
+				player->onDeEquipImbueItem(ib);
+			}
+		}
+	}
 
 	if (!it.abilities) {
 		return 1;
 	}
-	
-	if (it.imbuingSlots > 0) {
-			g_events->eventPlayerOnDeEquipImbuement(player, item);
-		}
 
 	if (it.abilities->invisible) {
 		player->removeCondition(CONDITION_INVISIBLE, static_cast<ConditionId_t>(slot));
@@ -839,37 +849,31 @@ uint32_t MoveEvent::DeEquipItem(MoveEvent*, Player* player, Item* item, slots_t 
 		player->removeCondition(CONDITION_REGENERATION, static_cast<ConditionId_t>(slot));
 	}
 
-	//skill modifiers
-	bool needUpdateSkills = false;
+	//skill/stats modifiers
+	bool needUpdate = false;
 
 	for (int32_t i = SKILL_FIRST; i <= SKILL_LAST; ++i) {
 		if (it.abilities->skills[i] != 0) {
-			needUpdateSkills = true;
+			needUpdate = true;
 			player->setVarSkill(static_cast<skills_t>(i), -it.abilities->skills[i]);
 		}
 	}
 
-	if (needUpdateSkills) {
-		player->sendSkills();
-	}
-
-	//stat modifiers
-	bool needUpdateStats = false;
-
 	for (int32_t s = STAT_FIRST; s <= STAT_LAST; ++s) {
 		if (it.abilities->stats[s]) {
-			needUpdateStats = true;
+			needUpdate = true;
 			player->setVarStats(static_cast<stats_t>(s), -it.abilities->stats[s]);
 		}
 
 		if (it.abilities->statsPercent[s]) {
-			needUpdateStats = true;
+			needUpdate = true;
 			player->setVarStats(static_cast<stats_t>(s), -static_cast<int32_t>(player->getDefaultStats(static_cast<stats_t>(s)) * ((it.abilities->statsPercent[s] - 100) / 100.f)));
 		}
 	}
 
-	if (needUpdateStats) {
+	if (needUpdate) {
 		player->sendStats();
+		player->sendSkills();
 	}
 
 	return 1;
@@ -946,21 +950,21 @@ bool MoveEvent::executeStep(Creature* creature, Item* item, const Position& pos)
 	return scriptInterface->callFunction(4);
 }
 
-uint32_t MoveEvent::fireEquip(Player* player, Item* item, slots_t slot, bool isCheck)
+uint32_t MoveEvent::fireEquip(Player* player, Item* item, slots_t toSlot, bool isCheck)
 {
 	if (scripted) {
-		if (!equipFunction || equipFunction(this, player, item, slot, isCheck) == 1) {
-			if (executeEquip(player, item, slot, isCheck)) {
+		if (!equipFunction || equipFunction(this, player, item, toSlot, isCheck) == 1) {
+			if (executeEquip(player, item, toSlot, isCheck)) {
 				return 1;
 			}
 		}
 		return 0;
 	} else {
-		return equipFunction(this, player, item, slot, isCheck);
+		return equipFunction(this, player, item, toSlot, isCheck);
 	}
 }
 
-bool MoveEvent::executeEquip(Player* player, Item* item, slots_t slot, bool isCheck)
+bool MoveEvent::executeEquip(Player* player, Item* item, slots_t onSlot, bool isCheck)
 {
 	//onEquip(player, item, slot, isCheck)
 	//onDeEquip(player, item, slot, isCheck)
@@ -978,22 +982,22 @@ bool MoveEvent::executeEquip(Player* player, Item* item, slots_t slot, bool isCh
 	LuaScriptInterface::pushUserdata<Player>(L, player);
 	LuaScriptInterface::setMetatable(L, -1, "Player");
 	LuaScriptInterface::pushThing(L, item);
-	lua_pushnumber(L, slot);
+	lua_pushnumber(L, onSlot);
 	LuaScriptInterface::pushBoolean(L, isCheck);
 
 	return scriptInterface->callFunction(4);
 }
 
-uint32_t MoveEvent::fireAddRemItem(Item* item, Item* tileItem, const Position& pos)
+uint32_t MoveEvent::fireAddRemItem(Item* item, Item* fromTile, const Position& pos)
 {
 	if (scripted) {
-		return executeAddRemItem(item, tileItem, pos);
+		return executeAddRemItem(item, fromTile, pos);
 	} else {
-		return moveFunction(item, tileItem, pos);
+		return moveFunction(item, fromTile, pos);
 	}
 }
 
-bool MoveEvent::executeAddRemItem(Item* item, Item* tileItem, const Position& pos)
+bool MoveEvent::executeAddRemItem(Item* item, Item* fromTile, const Position& pos)
 {
 	//onaddItem(moveitem, tileitem, pos)
 	//onRemoveItem(moveitem, tileitem, pos)
@@ -1009,7 +1013,7 @@ bool MoveEvent::executeAddRemItem(Item* item, Item* tileItem, const Position& po
 
 	scriptInterface->pushFunction(scriptId);
 	LuaScriptInterface::pushThing(L, item);
-	LuaScriptInterface::pushThing(L, tileItem);
+	LuaScriptInterface::pushThing(L, fromTile);
 	LuaScriptInterface::pushPosition(L, pos);
 
 	return scriptInterface->callFunction(3);

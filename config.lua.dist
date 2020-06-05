@@ -8,7 +8,7 @@ removeChargesFromRunes = true
 removeChargesFromPotions = true
 removeWeaponAmmunition = true
 removeWeaponCharges = true
-timeToDecreaseFrags = 24 * 60 * 60 * 1000
+timeToDecreaseFrags = 45 * 24 * 60 * 60
 whiteSkullTime = 15 * 60 * 1000
 stairJumpExhaustion = 2 * 1000
 experienceByKillingPlayers = false
@@ -29,43 +29,27 @@ loginProtocolPort = 7171
 gameProtocolPort = 7172
 statusProtocolPort = 7171
 maxPlayers = 0
-motd = "Bem vindo ao Open-TibiaBR!"
+motd = "Bem vindo ao OTServBR-Global!"
 onePlayerOnlinePerAccount = true
 allowClones = false
-serverName = "Open-TibiaBR"
+serverName = "OTServBR-Global"
 statusTimeout = 5 * 1000
 replaceKickOnLogin = true
 maxPacketsPerSecond = 25
 maxItem = 2000
 maxContainer = 100
 
--- 0 = Disable,
--- 1 = onKillMonster,
--- 2 = onOpenCorpse -- restart required]]
-autolootmode = 2
-
--- Version Manual
-clientVersionMin = 1100
-clientVersionMax = 1200
-clientVersionStr = "Only support outdated 10.00 and versions 11.00 to 11.49"
+--- Version
+clientVersion = 1200
+clientVersionStr = "12.00"
 
 -- Depot Limit
 freeDepotLimit = 2000
 premiumDepotLimit = 10000
-depotBoxes = 17
+depotBoxes = 18
 
 -- GameStore
 gamestoreByModules = true
-
--- Quest Sytem
-loadQuestLua = true
-
--- Casting System 
-enableLiveCasting = true
-liveCastPort = 7173
-
--- Expert Pvp Config
-expertPvp = false
 
 -- Deaths
 -- NOTE: Leave deathLosePercent as -1 if you want to use the default
@@ -75,6 +59,7 @@ deathLosePercent = -1
 
 -- Houses
 -- NOTE: set housePriceEachSQM to -1 to disable the ingame buy house functionality
+-- Periods: daily/weekly/monthly/yearly/never
 housePriceEachSQM = 1000
 houseRentPeriod = "never"
 
@@ -84,11 +69,15 @@ houseRentPeriod = "never"
 timeBetweenActions = 500
 timeBetweenExActions = 700
 
+-- Push Delay
+pushDelay = 1000
+pushDistanceDelay = 1500
+
 -- Map
 -- NOTE: set mapName WITHOUT .otbm at the end
 -- NOTE: unzip the map world.rar
 mapName = "otservbr"
-mapAuthor = "Open-TibiaBR"
+mapAuthor = "OTServBR"
 
 -- Market
 marketOfferDuration = 30 * 24 * 60 * 60
@@ -98,12 +87,11 @@ maxMarketOffersAtATimePerPlayer = 100
 
 -- MySQL
 mysqlHost = "127.0.0.1"
-mysqlUser = "darenum"
-mysqlPass = "darenum"
-mysqlDatabase = "database"
+mysqlUser = "root"
+mysqlPass = ""
+mysqlDatabase = "otservbr-global"
 mysqlPort = 3306
 mysqlSock = ""
-passwordType = "sha1"
 
 -- Misc.
 allowChangeOutfit = true
@@ -115,12 +103,22 @@ maxMessageBuffer = 4
 emoteSpells = false
 classicEquipmentSlots = false
 allowWalkthrough = true
-coinPacketSize = 1
-coinImagesURL = "http://localhost/images/store/"
+coinPacketSize = 25
+coinImagesURL = "http://127.0.0.1/images/store/"
 classicAttackSpeed = false
+showScriptsLogInConsole = false
+
+-- Server Save
+-- NOTE: serverSaveNotifyDuration in minutes
+serverSaveNotifyMessage = true
+serverSaveNotifyDuration = 5
+serverSaveCleanMap = false
+serverSaveClose = false
+serverSaveShutdown = true
 
 -- Rates
--- NOTE: rateExp is not used if you have enabled stages in data/XML/stages.xml
+-- NOTE: rateExp is used as a fallback only
+-- To configure experience rate see file data/stages.lua
 rateExp = 1
 rateSkill = 50
 rateLoot = 3
@@ -150,7 +148,7 @@ defaultPriority = "high"
 startupDatabaseOptimization = true
 
 -- Status server information
-ownerName = "Open-TibiaBR"
+ownerName = "OTServBR-Global"
 ownerEmail = ""
-url = ""
-location = "Brasil"
+url = "https://github.com/opentibiabr/otservbr-global"
+location = "South America"

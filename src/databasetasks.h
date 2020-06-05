@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,8 @@
 #include "enums.h"
 
 struct DatabaseTask {
-	DatabaseTask(std::string&& query, std::function<void(DBResult_ptr, bool)>&& callback, bool store) :
-		query(std::move(query)), callback(std::move(callback)), store(store) {}
+	DatabaseTask(std::string&& initQuery, std::function<void(DBResult_ptr, bool)>&& initCallback, bool initStore) :
+		query(std::move(initQuery)), callback(std::move(initCallback)), store(initStore) {}
 
 	std::string query;
 	std::function<void(DBResult_ptr, bool)> callback;

@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,10 +176,11 @@ class MonsterType
 		bool isPet = false;
 		bool isPassive = false;
 		bool isRewardBoss = false;
-		bool isPreyable = true;
 		bool canWalkOnEnergy = true;
 		bool canWalkOnFire = true;
 		bool canWalkOnPoison = true;
+
+		MonstersEvent_t eventType = MONSTERS_EVENT_NONE;
 	};
 
 	public:
@@ -189,17 +190,16 @@ class MonsterType
 		MonsterType(const MonsterType&) = delete;
 		MonsterType& operator=(const MonsterType&) = delete;
 
+		bool loadCallback(LuaScriptInterface* scriptInterface);
+
 		std::string name;
 		std::string nameDescription;
 
 		MonsterInfo info;
 
+		void loadLoot(MonsterType* monsterType, LootBlock lootblock);
+
 		bool canSpawn(const Position& pos);
-		void createLoot(Container* corpse);
-		bool createLootContainer(Container* parent, const LootBlock& lootblock);
-		std::vector<Item*> createLootItem(const LootBlock& lootBlock, bool canRerollLoot = false);
-	
-		//void loadLoot(MonsterType* monsterType, LootBlock lootblock); (from tfs)
 };
 
 class MonsterSpell
@@ -262,11 +262,9 @@ class Monsters
 		MonsterType* getMonsterType(const std::string& name);
 		void addMonsterType(const std::string& name, MonsterType* mType);
 		bool deserializeSpell(MonsterSpell* spell, spellBlock_t& sb, const std::string& description = "");
-		static uint32_t getLootRandom();
-		
-		std::vector<std::string> getPreyMonsters();
-		
+
 		std::unique_ptr<LuaScriptInterface> scriptInterface;
+		std::map<std::string, MonsterType> monsters;
 
 	private:
 		ConditionDamage* getDamageCondition(ConditionType_t conditionType,
@@ -278,7 +276,6 @@ class Monsters
 		void loadLootContainer(const pugi::xml_node& node, LootBlock&);
 		bool loadLootItem(const pugi::xml_node& node, LootBlock&);
 
-		std::map<std::string, MonsterType> monsters;
 		std::map<std::string, std::string> unloadedMonsters;
 
 		bool loaded = false;

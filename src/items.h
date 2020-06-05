@@ -1,6 +1,6 @@
 ﻿/**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ enum ItemTypes_t {
 	ITEM_TYPE_BED,
 	ITEM_TYPE_KEY,
 	ITEM_TYPE_RUNE,
+	ITEM_TYPE_SUPPLY,
 	ITEM_TYPE_REWARDCHEST,
 	ITEM_TYPE_CARPET,
 	ITEM_TYPE_LAST,
@@ -240,6 +241,7 @@ class ItemType
 
 		MagicEffectClasses magicEffect = CONST_ME_NONE;
 		Direction bedPartnerDir = DIRECTION_NONE;
+		QuickLootCategory_t quickLootCategory = LOOT_NONE;
 		WeaponType_t weaponType = WEAPON_NONE;
 		Ammo_t ammoType = AMMO_NONE;
 		ShootType_t shootType = CONST_ANI_NONE;
@@ -327,7 +329,7 @@ class Items
 
 		NameMap nameToItems;
 
-	protected:
+	private:
 		std::map<uint16_t, uint16_t> reverseItemMap;
 		std::vector<ItemType> items;
 		InventoryVector inventory;

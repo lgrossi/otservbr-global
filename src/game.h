@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include "raids.h"
 #include "npc.h"
 #include "wildcardtree.h"
-#include "quests.h"
 #include "gamestore.h"
 
 class ServiceManager;
@@ -71,9 +70,11 @@ enum LightState_t {
 	LIGHT_STATE_SUNRISE,
 };
 
-static constexpr int32_t EVENT_LIGHTINTERVAL = 7500;
+static constexpr int32_t EVENT_LIGHTINTERVAL = 10000;
 static constexpr int32_t EVENT_DECAYINTERVAL = 250;
 static constexpr int32_t EVENT_DECAY_BUCKETS = 4;
+static constexpr int32_t EVENT_IMBUEMENTINTERVAL = 250;
+static constexpr int32_t EVENT_IMBUEMENT_BUCKETS = 4;
 
 /**
   * Main Game class.
@@ -205,7 +206,7 @@ class Game
 		  * \param extendedPos If true, the creature will in first-hand be placed 2 tiles away
 		  * \param force If true, placing the creature will not fail because of obstacles (creatures/items)
 		  */
-		bool placeCreature(Creature* creature, const Position& pos, bool extendedPos = false, bool force = false);
+		bool placeCreature(Creature* creature, const Position& pos, bool extendedPos = false, bool force = false, Creature* master = nullptr);
 
 		/**
 		  * Remove Creature from the map.
@@ -228,6 +229,9 @@ class Game
 		}
 		uint32_t getPlayersRecord() const {
 			return playersRecord;
+		}
+		uint16_t getItemsPriceCount() const {
+			return itemsSaleCount;
 		}
 
 		LightInfo getWorldLightInfo() const;
@@ -267,7 +271,7 @@ class Game
 		  * \param flags optional flags to modifiy the default behaviour
 		  * \returns true if the removal was successful
 		  */
-		bool removeMoney(Cylinder* cylinder, uint64_t money, uint32_t flags = 0);
+		bool removeMoney(Cylinder* cylinder, uint64_t money, uint32_t flags = 0, bool useBank = false);
 
 		/**
 		  * Add item(s) with monetary value
@@ -382,6 +386,9 @@ class Game
 		void playerRequestAddVip(uint32_t playerId, const std::string& name);
 		void playerRequestRemoveVip(uint32_t playerId, uint32_t guid);
 		void playerRequestEditVip(uint32_t playerId, uint32_t guid, const std::string& description, uint32_t icon, bool notify);
+		void playerApplyImbuement(uint32_t playerId, uint32_t imbuementid, uint8_t slot, bool protectionCharm);
+		void playerClearingImbuement(uint32_t playerid, uint8_t slot);
+		void playerCloseImbuingWindow(uint32_t playerid);
 		void playerTurn(uint32_t playerId, Direction dir);
 		void playerRequestOutfit(uint32_t playerId);
 		void playerShowQuestLog(uint32_t playerId);
@@ -430,7 +437,6 @@ class Game
 		void changeLight(const Creature* creature);
 		void updateCreatureSkull(const Creature* player);
 		void updatePlayerShield(Player* player);
-		void updatePlayerHelpers(const Player& player);
 		void updateCreatureType(Creature* creature);
 		void updateCreatureWalkthrough(const Creature* creature);
 
@@ -460,13 +466,17 @@ class Game
 		void addDistanceEffect(const Position& fromPos, const Position& toPos, uint8_t effect);
 		static void addDistanceEffect(const SpectatorHashSet& spectators, const Position& fromPos, const Position& toPos, uint8_t effect);
 
+		void startImbuementCountdown(Item* item) {
+			item->incrementReferenceCounter();
+			toImbuedItems.push_front(item);
+		}
+
 		void startDecay(Item* item);
 		int32_t getLightHour() const {
 			return lightHour;
 		}
 
-		bool loadExperienceStages();
-		uint64_t getExperienceStage(uint32_t level);
+		bool loadItemsPrice();
 
 		void loadMotdNum();
 		void saveMotdNum() const;
@@ -476,6 +486,7 @@ class Game
 
 		void sendOfflineTrainingDialog(Player* player);
 
+		const std::map<uint16_t, uint32_t>& getItemsPrice() const { return itemsPriceMap; }
 		const std::unordered_map<uint32_t, Player*>& getPlayers() const { return players; }
 		const std::map<uint32_t, Npc*>& getNpcs() const { return npcs; }
 
@@ -507,6 +518,7 @@ class Game
 
 		bool reload(ReloadTypes_t reloadType);
 
+		bool itemidHasMoveevent(uint32_t itemid);
 		bool hasEffect(uint8_t effectId);
 		bool hasDistanceEffect(uint8_t effectId);
 
@@ -514,10 +526,14 @@ class Game
 		Map map;
 		Mounts mounts;
 		Raids raids;
-		Quests quests;
 		GameStore gameStore;
 
-	protected:
+		std::forward_list<Item*> toDecayItems;
+		std::forward_list<Item*> toImbuedItems;
+
+	private:
+		void checkImbuements();
+		void applyImbuementEffects(Creature* attacker, CombatDamage& damage, int32_t realDamage);
 		bool playerSaySpell(Player* player, SpeakClasses type, const std::string& text);
 		void playerWhisper(Player* player, const std::string& text);
 		bool playerYell(Player* player, const std::string& text);
@@ -536,12 +552,13 @@ class Game
 		std::list<Item*> decayItems[EVENT_DECAY_BUCKETS];
 		std::list<Creature*> checkCreatureLists[EVENT_CREATURECOUNT];
 
-		std::forward_list<Item*> toDecayItems;
+		std::list<Item*> imbuedItems[EVENT_IMBUEMENT_BUCKETS];
 
 		std::vector<Creature*> ToReleaseCreatures;
 		std::vector<Item*> ToReleaseItems;
 
 		size_t lastBucket = 0;
+		size_t lastImbuedBucket = 0;
 
 		WildcardTreeNode wildcardTree { false };
 
@@ -579,9 +596,8 @@ class Game
 		std::string motdHash;
 		uint32_t motdNum = 0;
 
-		uint32_t lastStageLevel = 0;
-		bool stagesEnabled = false;
-		bool useLastStageLevel = false;
+		std::map<uint16_t, uint32_t> itemsPriceMap;
+		uint16_t itemsSaleCount;
 };
 
 #endif

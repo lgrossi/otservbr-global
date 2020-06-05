@@ -1,6 +1,6 @@
-﻿/**
+/**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -311,7 +311,11 @@ bool Items::loadFromXml()
 
 		pugi::xml_attribute fromIdAttribute = itemNode.attribute("fromid");
 		if (!fromIdAttribute) {
-			std::cout << "[Warning - Items::loadFromXml] No item id found" << std::endl;
+			if (idAttribute) {
+				std::cout << "[Warning - Items::loadFromXml] No item id (" << idAttribute.value() << ") found" << std::endl;
+			} else {
+				std::cout << "[Warning - Items::loadFromXml] No item id found" << std::endl;
+			}
 			continue;
 		}
 
@@ -424,6 +428,8 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 				it.type = ITEM_TYPE_BED;
 			} else if (tmpStrValue == "rune") {
 				it.type = ITEM_TYPE_RUNE;
+			} else if (tmpStrValue == "supply") {
+				it.type = ITEM_TYPE_SUPPLY;
 			} else {
 				std::cout << "[Warning - Items::parseItemNode] Unknown type: " << valueAttribute.as_string() << std::endl;
 			}
@@ -443,14 +449,15 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 			it.extraDefense = pugi::cast<int32_t>(valueAttribute.value());
 		} else if (tmpStrValue == "attack") {
 			it.attack = pugi::cast<int32_t>(valueAttribute.value());
+		} else if (tmpStrValue == "rotateto") {
+			it.rotateTo = pugi::cast<int32_t>(valueAttribute.value());
 		} else if (tmpStrValue == "wrapcontainer") {
 			it.wrapContainer = valueAttribute.as_bool();
 		} else if (tmpStrValue == "imbuingslots") {
 			it.imbuingSlots = pugi::cast<int32_t>(valueAttribute.value());
 		} else if (tmpStrValue == "wrapableto" || tmpStrValue == "unwrapableto") {
 			it.wrapableTo = pugi::cast<int32_t>(valueAttribute.value());
-		} else if (tmpStrValue == "rotateto") {
-			it.rotateTo = pugi::cast<int32_t>(valueAttribute.value());
+			it.wrapable = true;
 		} else if (tmpStrValue == "moveable" || tmpStrValue == "movable") {
 			it.moveable = valueAttribute.as_bool();
 		} else if (tmpStrValue == "blockprojectile") {
@@ -460,19 +467,19 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 		} else if (tmpStrValue == "floorchange") {
 			tmpStrValue = asLowerCaseString(valueAttribute.as_string());
 			if (tmpStrValue == "down") {
-				it.floorChange = TILESTATE_FLOORCHANGE_DOWN;
+				it.floorChange |= TILESTATE_FLOORCHANGE_DOWN;
 			} else if (tmpStrValue == "north") {
-				it.floorChange = TILESTATE_FLOORCHANGE_NORTH;
+				it.floorChange |= TILESTATE_FLOORCHANGE_NORTH;
 			} else if (tmpStrValue == "south") {
-				it.floorChange = TILESTATE_FLOORCHANGE_SOUTH;
+				it.floorChange |= TILESTATE_FLOORCHANGE_SOUTH;
 			} else if (tmpStrValue == "southalt") {
-				it.floorChange = TILESTATE_FLOORCHANGE_SOUTH_ALT;
+				it.floorChange |= TILESTATE_FLOORCHANGE_SOUTH_ALT;
 			} else if (tmpStrValue == "west") {
-				it.floorChange = TILESTATE_FLOORCHANGE_WEST;
+				it.floorChange |= TILESTATE_FLOORCHANGE_WEST;
 			} else if (tmpStrValue == "east") {
-				it.floorChange = TILESTATE_FLOORCHANGE_EAST;
+				it.floorChange |= TILESTATE_FLOORCHANGE_EAST;
 			} else if (tmpStrValue == "eastalt") {
-				it.floorChange = TILESTATE_FLOORCHANGE_EAST_ALT;
+				it.floorChange |= TILESTATE_FLOORCHANGE_EAST_ALT;
 			} else {
 				std::cout << "[Warning - Items::parseItemNode] Unknown floorChange: " << valueAttribute.as_string() << std::endl;
 			}
@@ -545,6 +552,63 @@ void Items::parseItemNode(const pugi::xml_node& itemNode, uint16_t id)
 			it.maxTextLen = pugi::cast<uint16_t>(valueAttribute.value());
 		} else if (tmpStrValue == "writeonceitemid") {
 			it.writeOnceItemId = pugi::cast<uint16_t>(valueAttribute.value());
+		} else if (tmpStrValue == "quicklootcategory") {
+			tmpStrValue = asLowerCaseString(valueAttribute.as_string());
+			if (tmpStrValue == "none") {
+				it.quickLootCategory = LOOT_NONE;
+			} else if (tmpStrValue == "unassigned") {
+				it.quickLootCategory = LOOT_UNASSIGNED;
+			} else if (tmpStrValue == "gold") {
+				it.quickLootCategory = LOOT_GOLD;
+			} else if (tmpStrValue == "armor") {
+				it.quickLootCategory = LOOT_ARMOR;
+			} else if (tmpStrValue == "amulet") {
+				it.quickLootCategory = LOOT_AMULET;
+			} else if (tmpStrValue == "boots") {
+				it.quickLootCategory = LOOT_BOOTS;
+			} else if (tmpStrValue == "container") {
+				it.quickLootCategory = LOOT_CONTAINER;
+			} else if (tmpStrValue == "creatureproduct") {
+				it.quickLootCategory = LOOT_CREATURE_PRODUCT;
+			} else if (tmpStrValue == "decoration") {
+				it.quickLootCategory = LOOT_DECORATION;
+			} else if (tmpStrValue == "food") {
+				it.quickLootCategory = LOOT_FOOD;
+			} else if (tmpStrValue == "helmet") {
+				it.quickLootCategory = LOOT_HELMET;
+			} else if (tmpStrValue == "legs") {
+				it.quickLootCategory = LOOT_LEGS;
+			} else if (tmpStrValue == "other") {
+				it.quickLootCategory = LOOT_OTHER;
+			} else if (tmpStrValue == "potion") {
+				it.quickLootCategory = LOOT_POTION;
+			} else if (tmpStrValue == "ring") {
+				it.quickLootCategory = LOOT_RING;
+			} else if (tmpStrValue == "rune") {
+				it.quickLootCategory = LOOT_RUNE;
+			} else if (tmpStrValue == "shield") {
+				it.quickLootCategory = LOOT_SHIELD;
+			} else if (tmpStrValue == "tool") {
+				it.quickLootCategory = LOOT_TOOL;
+			} else if (tmpStrValue == "valuable") {
+				it.quickLootCategory = LOOT_VALUABLE;
+			} else if (tmpStrValue == "weaponammo") {
+				it.quickLootCategory = LOOT_WEAPON_AMMO;
+			} else if (tmpStrValue == "weaponaxe") {
+				it.quickLootCategory = LOOT_WEAPON_AXE;
+			} else if (tmpStrValue == "weaponclub") {
+				it.quickLootCategory = LOOT_WEAPON_CLUB;
+			} else if (tmpStrValue == "weapondistance") {
+				it.quickLootCategory = LOOT_WEAPON_DISTANCE;
+			} else if (tmpStrValue == "weaponsword") {
+				it.quickLootCategory = LOOT_WEAPON_SWORD;
+			} else if (tmpStrValue == "weaponwand") {
+				it.quickLootCategory = LOOT_WEAPON_WAND;
+			} else if (tmpStrValue == "stashretrieve") {
+				it.quickLootCategory = LOOT_STASH_RETRIEVE;
+			} else {
+				std::cout << "[Warning - Items::parseItemNode] Unknown quickLootCategory: " << valueAttribute.as_string() << std::endl;
+			}
 		} else if (tmpStrValue == "weapontype") {
 			tmpStrValue = asLowerCaseString(valueAttribute.as_string());
 			if (tmpStrValue == "sword") {

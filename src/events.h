@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,14 @@
 #ifndef FS_EVENTS_H_BD444CC0EE167E5777E4C90C766B36DC
 #define FS_EVENTS_H_BD444CC0EE167E5777E4C90C766B36DC
 
+#include "imbuements.h"
 #include "luascript.h"
 #include "spells.h"
 
 class Party;
 class ItemType;
 class Tile;
+class Imbuements;
 
 class Events
 {
@@ -34,6 +36,7 @@ class Events
 		int32_t creatureOnChangeOutfit = -1;
 		int32_t creatureOnAreaCombat = -1;
 		int32_t creatureOnTargetCombat = -1;
+		int32_t creatureOnHear = -1;
 		int32_t creatureOnDrainHealth = -1;
 
 		// Party
@@ -48,7 +51,6 @@ class Events
 		int32_t playerOnLookInBattleList = -1;
 		int32_t playerOnLookInTrade = -1;
 		int32_t playerOnLookInShop = -1;
-		int32_t playerOnMove = -1;
 		int32_t playerOnMoveItem = -1;
 		int32_t playerOnItemMoved = -1;
 		int32_t playerOnMoveCreature = -1;
@@ -60,18 +62,18 @@ class Events
 		int32_t playerOnGainExperience = -1;
 		int32_t playerOnLoseExperience = -1;
 		int32_t playerOnGainSkillTries = -1;
-		int32_t playerOnUseWeapon = -1;
-		int32_t playerOnCombatSpell = -1;
-		int32_t playerOnEquipImbuement = -1;
-		int32_t playerOnDeEquipImbuement = -1;
 		int32_t playerOnRequestQuestLog = -1;
 		int32_t playerOnRequestQuestLine = -1;
-		int32_t playerOnStorageUpdate = -1;		
+		int32_t playerOnStorageUpdate = -1;
 		int32_t playerOnRemoveCount = -1;
+		int32_t playerCanBeAppliedImbuement = -1;
+		int32_t playerOnApplyImbuement = -1;
+		int32_t playerClearImbuement = -1;
+		int32_t playerOnCombat = -1;
 
 		// Monster
+		int32_t monsterOnDropLoot = -1;
 		int32_t monsterOnSpawn = -1;
-		/*&int32_t monsterOnDropLoot = -1;*/
 	};
 
 	public:
@@ -83,6 +85,7 @@ class Events
 		bool eventCreatureOnChangeOutfit(Creature* creature, const Outfit_t& outfit);
 		ReturnValue eventCreatureOnAreaCombat(Creature* creature, Tile* tile, bool aggressive);
 		ReturnValue eventCreatureOnTargetCombat(Creature* creature, Creature* target);
+		void eventCreatureOnHear(Creature* creature, Creature* speaker, const std::string& words, SpeakClasses type);
 		void eventCreatureOnDrainHealth(Creature* creature, Creature* attacker, CombatType_t& typePrimary, int32_t& damagePrimary, CombatType_t& typeSecondary, int32_t& damageSecondary, TextColor_t& colorPrimary, TextColor_t& colorSecondary);
 
 		// Party
@@ -108,19 +111,18 @@ class Events
 		void eventPlayerOnGainExperience(Player* player, Creature* source, uint64_t& exp, uint64_t rawExp);
 		void eventPlayerOnLoseExperience(Player* player, uint64_t& exp);
 		void eventPlayerOnGainSkillTries(Player* player, skills_t skill, uint64_t& tries);
-		void eventPlayerOnUseWeapon(Player* player, int32_t& normalDamage, CombatType_t& elementType, int32_t& elementDamage);
-		void eventPlayerOnCombatSpell(Player* player, int32_t& normalDamage, int32_t& elementDamage, CombatType_t& elementType, bool changeDamage);
-		bool eventPlayerOnMove(Player* player);
 		bool eventPlayerOnRemoveCount(Player* player, Item * item);
-		void eventPlayerOnEquipImbuement(Player* player, Item* item);
-		void eventPlayerOnDeEquipImbuement(Player* player, Item* item);
 		void eventPlayerOnRequestQuestLog(Player* player);
 		void eventPlayerOnRequestQuestLine(Player* player, uint16_t questId);
 		void eventOnStorageUpdate(Player* player, const uint32_t key, const int32_t value, int32_t oldValue, uint64_t currentTime);
+		bool eventPlayerCanBeAppliedImbuement(Player* player, Imbuement* imbuement, Item* item);
+		void eventPlayerOnApplyImbuement(Player* player, Imbuement* imbuement, Item* item, uint8_t slot, bool protectionCharm);
+		void eventPlayerClearImbuement(Player* player, Item* item, uint8_t slot);
+		void eventPlayerOnCombat(Player* player, Creature* target, Item* item, CombatDamage& damage);
 
 		// Monster
+		void eventMonsterOnDropLoot(Monster* monster, Container* corpse);
 		void eventMonsterOnSpawn(Monster* monster, const Position& position);
-		/*void eventMonsterOnDropLoot(Monster* monster, Container* corpse); */
 
 	private:
 		LuaScriptInterface scriptInterface;

@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef FS_ACCOUNT_H_34817537BA2B4CB7B71AA562AFBB118F
-#define FS_ACCOUNT_H_34817537BA2B4CB7B71AA562AFBB118F
+#ifndef SRC_ACCOUNT_H_
+#define SRC_ACCOUNT_H_
+
+#include <string>
+#include <vector>
 
 #include "enums.h"
 
+/**
+ * @brief Struct to hold the Account information
+ *
+ * @var lastDay Last day of the premium account
+ * @var premiumDays Remaining days of premium account
+ */
 struct Account {
 	std::vector<std::string> characters;
 	std::string name;
@@ -35,12 +44,45 @@ struct Account {
 	Account() = default;
 };
 
+/**
+ * @brief Class that handles account coins transactions
+ *
+ */
 class IOAccount {
 	public:
+		/**
+		 * @brief Get the amount of coins that the account has from database.
+		 *
+		 * @param accountId Account ID to get the coins.
+		 * @return uint32_t Amount of coins.
+		 */
 		static uint32_t getCoinBalance(uint32_t accountId);
+
+		/**
+		 * @brief Add coins to the account and update database.
+		 *
+		 * @param accountId Account ID to add the coins
+		 * @param amount Amount of coins to be added
+		 */
 		static void addCoins(uint32_t accountId, int32_t amount);
+
+		/**
+		 * @brief Removes coins from the account and update database.
+		 *
+		 * @param accountId Account ID from where the coins will be removed
+		 * @param amount Amount of coins to be removed
+		 */
 		static void removeCoins(uint32_t accountId, int32_t amount);
-		static void registerTransaction(uint32_t accountId, int32_t coins, const std::string &description);
+
+		/**
+		 * @brief Register all the transactions of coins in database.
+		 *
+		 * @param accountId Account ID that made the transaction
+		 * @param coins Number of coins of the transaction
+		 * @param description Description of transaction
+		 */
+		static void registerTransaction(uint32_t accountId, int32_t coins,
+										const std::string &description);
 };
 
-#endif
+#endif  // SRC_ACCOUNT_H_

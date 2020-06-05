@@ -1,4 +1,4 @@
-set(tfs_SRC
+set(otbr_SRC
 	${CMAKE_CURRENT_LIST_DIR}/otpch.cpp
 	${CMAKE_CURRENT_LIST_DIR}/account.cpp
 	${CMAKE_CURRENT_LIST_DIR}/actions.cpp
@@ -28,6 +28,7 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/guild.cpp
 	${CMAKE_CURRENT_LIST_DIR}/groups.cpp
 	${CMAKE_CURRENT_LIST_DIR}/house.cpp
+	${CMAKE_CURRENT_LIST_DIR}/housetile.cpp
 	${CMAKE_CURRENT_LIST_DIR}/inbox.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ioguild.cpp
 	${CMAKE_CURRENT_LIST_DIR}/iologindata.cpp
@@ -36,7 +37,9 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/iomarket.cpp
 	${CMAKE_CURRENT_LIST_DIR}/item.cpp
 	${CMAKE_CURRENT_LIST_DIR}/items.cpp
+	${CMAKE_CURRENT_LIST_DIR}/imbuements.cpp
 	${CMAKE_CURRENT_LIST_DIR}/luascript.cpp
+	${CMAKE_CURRENT_LIST_DIR}/loguru.cpp
 	${CMAKE_CURRENT_LIST_DIR}/mailbox.cpp
 	${CMAKE_CURRENT_LIST_DIR}/map.cpp
 	${CMAKE_CURRENT_LIST_DIR}/modules.cpp
@@ -54,12 +57,8 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/position.cpp
 	${CMAKE_CURRENT_LIST_DIR}/protocol.cpp
 	${CMAKE_CURRENT_LIST_DIR}/protocolgame.cpp
-	${CMAKE_CURRENT_LIST_DIR}/protocolgamebase.cpp
 	${CMAKE_CURRENT_LIST_DIR}/protocollogin.cpp
-	${CMAKE_CURRENT_LIST_DIR}/protocolold.cpp
-	${CMAKE_CURRENT_LIST_DIR}/protocolspectator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/protocolstatus.cpp
-	${CMAKE_CURRENT_LIST_DIR}/quests.cpp
 	${CMAKE_CURRENT_LIST_DIR}/raids.cpp
 	${CMAKE_CURRENT_LIST_DIR}/reward.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rewardchest.cpp
@@ -82,5 +81,5 @@ set(tfs_SRC
 	${CMAKE_CURRENT_LIST_DIR}/waitlist.cpp
 	${CMAKE_CURRENT_LIST_DIR}/weapons.cpp
 	${CMAKE_CURRENT_LIST_DIR}/wildcardtree.cpp
+	${CMAKE_CURRENT_LIST_DIR}/xtea.cpp
 	PARENT_SCOPE)
-

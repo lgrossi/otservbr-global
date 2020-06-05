@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,8 @@ class MoveEvents final : public BaseEvents
 		uint32_t onItemMove(Item* item, Tile* tile, bool isAdd);
 
 		MoveEvent* getEvent(Item* item, MoveEvent_t eventType);
+
+		bool isRegistered(uint32_t itemid);
 
 		bool registerLuaEvent(MoveEvent* event);
 		bool registerLuaFunction(MoveEvent* event);
@@ -178,10 +180,10 @@ class MoveEvent final : public Event
 		void addUniqueId(uint32_t id) {
 			uniqueIdRange.emplace_back(id);
 		}
-		std::vector<std::string> getPosList() {
+		std::vector<Position> getPosList() {
 			return posList;
 		}
-		void addPosList(std::string pos) {
+		void addPosList(Position pos) {
 			posList.emplace_back(pos);
 		}
 		std::string getSlotName() {
@@ -250,7 +252,7 @@ class MoveEvent final : public Event
 		std::vector<uint32_t> itemIdRange;
 		std::vector<uint32_t> actionIdRange;
 		std::vector<uint32_t> uniqueIdRange;
-		std::vector<std::string> posList;
+		std::vector<Position> posList;
 };
 
 #endif

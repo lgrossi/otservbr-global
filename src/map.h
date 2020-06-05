@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ class AStarNodes
 		AStarNodes(uint32_t x, uint32_t y);
 
 		AStarNode* createOpenNode(AStarNode* parent, uint32_t x, uint32_t y, int_fast32_t f);
-		AStarNode* getBestNode(const Position& targetPos);
+		AStarNode* getBestNode();
 		void closeNode(AStarNode* node);
 		void openNode(AStarNode* node);
 		int_fast32_t getClosedNodes() const;
@@ -152,7 +152,7 @@ class QTreeLeafNode final : public QTreeNode
 		void addCreature(Creature* c);
 		void removeCreature(Creature* c);
 
-	protected:
+	private:
 		static bool newLeaf;
 		QTreeLeafNode* leafS = nullptr;
 		QTreeLeafNode* leafE = nullptr;
@@ -250,8 +250,8 @@ class Map
 
 		const Tile* canWalkTo(const Creature& creature, const Position& pos) const;
 
-		bool getPathMatching(const Creature& creature, const Position& targetPos, std::forward_list<Direction>& dirList,
- 		const FrozenPathingConditionCall& pathCondition, const FindPathParams& fpp) const;
+		bool getPathMatching(const Creature& creature, std::forward_list<Direction>& dirList,
+						const FrozenPathingConditionCall& pathCondition, const FindPathParams& fpp) const;
 
 		std::map<std::string, Position> waypoints;
 
@@ -262,7 +262,7 @@ class Map
 		Spawns spawns;
 		Towns towns;
 		Houses houses;
-	protected:
+	private:
 		SpectatorCache spectatorCache;
 		SpectatorCache playersSpectatorCache;
 

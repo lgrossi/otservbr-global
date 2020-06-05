@@ -1,7 +1,5 @@
-local mType = MonsterType("Dragon Lord")
+local mType = Game.createMonsterType("example")
 local monster = {}
-monster.eventFile = false -- will try to load the file example.lua in data/scripts/monsters/events
-monster.eventFile = "example" -- will try to load the file test.lua in data/scripts/monsters/events
 monster.description = "an example"
 monster.experience = 1
 monster.outfit = {
@@ -23,13 +21,16 @@ monster.changeTarget = {
 monster.flags = {
 	summonable = false,
 	attackable = true,
+	rewardboss = false,
 	hostile = true,
 	convinceable = false,
 	illusionable = false,
 	canPushItems = true,
 	canPushCreatures = true,
+	preyable = false,
 	targetDistance = 1,
-	staticAttackChance = 70
+	staticAttackChance = 70,
+	respawnType = RESPAWN_IN_ALL
 }
 
 monster.summons = {
@@ -86,5 +87,31 @@ monster.immunities = {
 	{type = "paralyze", condition = true},
 	{type = "invisible", condition = true}
 }
+
+mType.onThink = function(monster, interval)
+	print("I'm thinking")
+end
+
+mType.onAppear = function(monster, creature)
+	if monster:getId() == creature:getId() then
+		print(monster:getId(), creature:getId())
+	end
+end
+
+mType.onDisappear = function(monster, creature)
+	if monster:getId() == creature:getId() then
+		print(monster:getId(), creature:getId())
+	end
+end
+
+mType.onMove = function(monster, creature, fromPosition, toPosition)
+	if monster:getId() == creature:getId() then
+		print(monster:getId(), creature:getId(), fromPosition, toPosition)
+	end
+end
+
+mType.onSay = function(monster, creature, type, message)
+	print(monster:getId(), creature:getId(), type, message)
+end
 
 mType:register(monster)

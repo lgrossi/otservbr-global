@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,8 @@ class Spells final : public BaseEvents
 
 		static Position getCasterPosition(Creature* creature, Direction dir);
 		std::string getScriptBaseName() const override;
+
+		std::list<uint16_t> getSpellsByVocation(uint16_t vocationId);
 
 		const std::map<std::string, InstantSpell>& getInstantSpells() const {
 			return instants;
@@ -207,13 +209,13 @@ class Spell : public BaseSpell
 			vocSpellMap[n] = b;
 		}
 
-		const SpellGroup_t getGroup() const {
+		SpellGroup_t getGroup() {
 			return group;
 		}
 		void setGroup(SpellGroup_t g) {
 			group = g;
 		}
-		const SpellGroup_t getSecondaryGroup() const {
+		SpellGroup_t getSecondaryGroup() {
 			return secondaryGroup;
 		}
 		void setSecondaryGroup(SpellGroup_t g) {

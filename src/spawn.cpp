@@ -1,6 +1,6 @@
 /**
  * The Forgotten Server - a free and open-source MMORPG server emulator
- * Copyright (C) 2019 Mark Samman <mark.samman@gmail.com>
+ * Copyright (C) 2019  Mark Samman <mark.samman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
 #include "monster.h"
 #include "configmanager.h"
 #include "scheduler.h"
-#include "events.h"
 
 #include "pugicast.h"
+#include "events.h"
 
 extern Events* g_events;
 extern ConfigManager g_config;
@@ -36,20 +36,20 @@ extern Events* g_events;
 
 static constexpr int32_t MINSPAWN_INTERVAL = 1000;
 
-bool Spawns::loadFromXml(const std::string& filename)
+bool Spawns::loadFromXml(const std::string& fromFilename)
 {
 	if (loaded) {
 		return true;
 	}
 
 	pugi::xml_document doc;
-	pugi::xml_parse_result result = doc.load_file(filename.c_str());
+	pugi::xml_parse_result result = doc.load_file(fromFilename.c_str());
 	if (!result) {
-		printXMLError("Error - Spawns::loadFromXml", filename, result);
+		printXMLError("Error - Spawns::loadFromXml", fromFilename, result);
 		return false;
 	}
 
-	this->filename = filename;
+	this->filename = fromFilename;
 	loaded = true;
 
 	for (auto spawnNode : doc.child("spawns").children()) {
@@ -162,7 +162,7 @@ bool Spawns::isInZone(const Position& centerPos, int32_t radius, const Position&
 	}
 
 	return ((pos.getX() >= centerPos.getX() - radius) && (pos.getX() <= centerPos.getX() + radius) &&
-			(pos.getY() >= centerPos.getY() - radius) && (pos.getY() <= centerPos.getY() + radius));
+	        (pos.getY() >= centerPos.getY() - radius) && (pos.getY() <= centerPos.getY() + radius));
 }
 
 void Spawn::startSpawnCheck()
@@ -290,17 +290,11 @@ void Spawn::cleanup()
 {
 	auto it = spawnedMap.begin();
 	while (it != spawnedMap.end()) {
-		uint32_t spawnId = it->first;
+	        uint32_t spawnId = it->first;
 		Monster* monster = it->second;
-		if (monster->isRemoved()) {
-			if (spawnId != 0) {
-				spawnMap[spawnId].lastSpawn = OTSYS_TIME();
-			}
-
+	        if (monster->isRemoved()) {
+		        spawnMap[spawnId].lastSpawn = OTSYS_TIME();
 			monster->decrementReferenceCounter();
-			it = spawnedMap.erase(it);
-		} else if (!isInSpawnZone(monster->getPosition()) && spawnId != 0) {
-			spawnedMap.insert(spawned_pair(0, monster));
 			it = spawnedMap.erase(it);
 		} else {
 			++it;
@@ -308,7 +302,7 @@ void Spawn::cleanup()
 	}
 }
 
-bool Spawn::addMonster(const std::string& name, const Position& pos, Direction dir, uint32_t interval)
+bool Spawn::addMonster(const std::string& name, const Position& pos, Direction dir, uint32_t scheduleInterval)
 {
 	MonsterType* mType = g_monsters.getMonsterType(name);
 	if (!mType) {
@@ -316,13 +310,13 @@ bool Spawn::addMonster(const std::string& name, const Position& pos, Direction d
 		return false;
 	}
 
-	this->interval = std::min(this->interval, interval);
+	this->interval = std::min(this->interval, scheduleInterval);
 
 	spawnBlock_t sb;
 	sb.mType = mType;
 	sb.pos = pos;
 	sb.direction = dir;
-	sb.interval = interval;
+	sb.interval = scheduleInterval;
 	sb.lastSpawn = 0;
 
 	uint32_t spawnId = spawnMap.size() + 1;
