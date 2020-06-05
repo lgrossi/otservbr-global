@@ -120,11 +120,11 @@ Blessings.sendBlessStatus = function(player, curBless)
 
 	msg:addByte(dlgBtnColour) -- Bless dialog button colour 1 = Disabled | 2 = normal | 3 = green
 
-	if #curBless >= 5 then
-		msg:addU16(1) -- TODO ?
-	else
-		msg:addU16(0)
-	end
+	-- if #curBless >= 5 then
+	-- 	msg:addU16(1) -- TODO ?
+	-- else
+	-- 	msg:addU16(0)
+	-- end
 
 	msg:sendToPlayer(player)
 end

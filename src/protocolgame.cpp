@@ -1474,10 +1474,7 @@ void ProtocolGame::sendBlessStatus()
 
 	msg.addByte(0x9C);
 
-	if (blessCount >= 5) //Show up the glowing effect in items if have all blesses
-		flag |= 1;
-
-	msg.add<uint16_t>(flag);
+	msg.add<uint16_t>((blessCount >= 5) ? (flag | 1) : flag); //Show up the glowing effect in items if have all blesses
 	msg.addByte((blessCount >= 7) ? 3 : ((blessCount >= 5) ? 2 : 1)); // 1 = Disabled | 2 = normal | 3 = green
 	// msg.add<uint16_t>(0);
 
@@ -1522,9 +1519,7 @@ void ProtocolGame::initPreyData()
 		sendPreyData(static_cast<PreySlotNum_t>(i), PREY_STATE_LOCKED);
 	}
 
-	sendResourceBalance(RESOURCE_PREY, 0);
-	sendResourceBalance(RESOURCE_INVENTORY, 0);
-
+	sendResourcesBalance();
 	sendPreyRerollPrice();
 }
 
@@ -1778,10 +1773,11 @@ void ProtocolGame::sendGameNews()
 	writeToOutputBuffer(msg);
 }
 
-void ProtocolGame::sendResourcesBalance(uint64_t money, uint64_t bank)
+void ProtocolGame::sendResourcesBalance(uint64_t money /*= 0*/, uint64_t bank /*= 0*/, uint64_t prey /*= 0*/)
 {
 	sendResourceBalance(RESOURCE_BANK, bank);
-	sendResourcesBalance(RESOURCE_INVENTORY, money);
+	sendResourceBalance(RESOURCE_INVENTORY, money);
+	sendResourceBalance(RESOURCE_PREY, prey);
 }
 
 void ProtocolGame::sendResourceBalance(Resource_t resourceType, uint64_t value)
