@@ -1941,10 +1941,16 @@ void ProtocolGame::sendCoinBalance()
 		return;
 	}
 
+	// send is updating
+	// TODO: export this to it own function
 	NetworkMessage msg;
 	msg.addByte(0xF2);
 	msg.addByte(0x01);
+	writeToOutputBuffer(msg);
 
+	msg.reset();
+
+	// send update
 	msg.addByte(0xDF);
 	msg.addByte(0x01);
 
@@ -1956,12 +1962,6 @@ void ProtocolGame::sendCoinBalance()
 
 void ProtocolGame::updateCoinBalance()
 {
-	NetworkMessage msg;
-	msg.addByte(0xF2);
-	msg.addByte(0x00);
-
-	writeToOutputBuffer(msg);
-
 	g_dispatcher.addTask(
 		createTask(std::bind([](ProtocolGame* client) {
 			if (client && client->player) {
@@ -3303,6 +3303,7 @@ void ProtocolGame::sendStoreTrasactionHistory(HistoryStoreOfferList &list, uint3
 		msg.add<uint32_t>(offer.time);
 		msg.addByte(offer.mode);
 		msg.add<uint32_t>(offer.amount); //FIXME: investigate why it doesn't send the price properly
+		msg.addByte(0x00); // 0 = transferable tibia coin, 1 = normal tibia coin
 		msg.addString(offer.description);
 	}
 
