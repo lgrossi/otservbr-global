@@ -110,15 +110,7 @@ Blessings.sendBlessStatus = function(player, curBless)
 	end
 
 	msg:addU16(bitWiseCurrentBless)
-	dlgBtnColour = 1
-
-	if blessCount >= 7 then
-		dlgBtnColour = 3
-	elseif blessCount > 0 then
-		dlgBtnColour = 2
-	end
-
-	msg:addByte(dlgBtnColour) -- Bless dialog button colour 1 = Disabled | 2 = normal | 3 = green
+	msg:addByte(blessCount >= 7 and 3 or (blessCount > 0 and 2 or 1)) -- Bless dialog button colour 1 = Disabled | 2 = normal | 3 = green
 
 	-- if #curBless >= 5 then
 	-- 	msg:addU16(1) -- TODO ?
